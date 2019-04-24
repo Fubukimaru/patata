@@ -6,6 +6,7 @@ POMODORI=4
 TASK=$(task next limit:1 | tail -n +4 | head -n 1 | sed 's/^ //' | cut -d ' ' -f1)
 INTERACTIVE=true
 MUTE=false
+FILESTATUS=true
 
 show_help() {
 	cat <<-END
@@ -54,7 +55,7 @@ while getopts :sw:b:p:t:m opt; do
 	esac
 done
 
-time_left="%im left of %s "
+time_left="%im left of %s"
 
 if $INTERACTIVE; then
     task $TASK list
@@ -72,6 +73,9 @@ do
 	for ((i=$WORK; i>0; i--))
 	do
 		printf "$time_left" $i "work"
+        if $FILESTATUS; then
+		    printf "$time_left" $i "work" > /tmp/patata_status
+        fi
 		sleep 1m
 	done
 
@@ -80,6 +84,9 @@ do
 		read -d '' -t 0.001
 		echo -e "\a"
 		echo "Work over"
+        if $FILESTATUS; then
+    		echo "Work over" > /tmp/patata_status
+        fi
 		read
 	fi
 
@@ -88,6 +95,9 @@ do
 	for ((i=$PAUSE; i>0; i--))
 	do
 		printf "$time_left" $i "pause"
+        if $FILESTATUS; then 
+		    printf "$time_left" $i "pause" > /tmp/patata_status
+        fi
 		sleep 1m
 	done
 
@@ -96,8 +106,17 @@ do
 		read -d '' -t 0.001
 		echo -e "\a"
 		echo "Pause over"
+
+        if $FILESTATUS; then 
+		    echo "Pause over" > /tmp/patata_status
+        fi
 		read
 	fi
 done
 
 echo "Take a coffee break! ☕"
+
+
+if $FILESTATUS; then 
+    rm /tmp/patata_status
+fi
