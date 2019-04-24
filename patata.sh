@@ -20,7 +20,7 @@ show_help() {
 		    -b m: let break periods last m minutes (default is 5)
 		    -p i: let iterate of pomodori bevor the big break (default is 4)
 		    -t t: let task ID from Taskwarrior to start (default is the most urgent task)
-            -f f: print all the information to the file f
+		    -f f: print all the information to the file f
 		    -h: print this message
 	END
 }
