@@ -6,11 +6,11 @@ POMODORI=4
 TASK=$(task next limit:1 | tail -n +4 | head -n 1 | sed 's/^ //' | cut -d ' ' -f1)
 INTERACTIVE=true
 MUTE=false
-FILESTATUS=true
+STATUSFILE=false
 
 show_help() {
 	cat <<-END
-		usage: potato [-s] [-m] [-w m] [-b m] [-p i] [-t t] [-h]
+		usage: potato [-s] [-m] [-w m] [-b m] [-p i] [-t t] [-h] [-f f]
 		    -s: simple output. Intended for use in scripts
 		        When enabled, potato outputs one line for each minute, and doesn't print the bell character
 		        (ascii 007)
@@ -20,6 +20,7 @@ show_help() {
 		    -b m: let break periods last m minutes (default is 5)
 		    -p i: let iterate of pomodori bevor the big break (default is 4)
 		    -t t: let task ID from Taskwarrior to start (default is the most urgent task)
+            -f f: print all the information to the file f
 		    -h: print this message
 	END
 }
@@ -27,8 +28,8 @@ show_help() {
 controlc() {
     # Secure shutdown
     printf "\rSIGINT caught      "
-    if $FILESTATUS; then 
-        rm /tmp/patata_status
+    if [ -n $STATUSFILE ]; then 
+        rm $STATUSFILE
     fi
     task $TASK stop
 
@@ -41,7 +42,7 @@ play_notification() {
 	aplay -q /usr/lib/potato/notification.wav&
 }
 
-while getopts :sw:b:p:t:m opt; do
+while getopts :sw:b:p:t:mf: opt; do
 	case "$opt" in
 	s)
 		INTERACTIVE=false
@@ -61,6 +62,9 @@ while getopts :sw:b:p:t:m opt; do
 	t)
 		TASK=$OPTARG
 	;;
+    f)
+        STATUSFILE=$OPTARG
+    ;;
 	h|\?)
 		show_help
 		exit 1
@@ -86,8 +90,8 @@ do
 	for ((i=$WORK; i>0; i--))
 	do
 		printf "$time_left" $i "work"
-        if $FILESTATUS; then
-		    printf "$time_left" $i "work" > /tmp/patata_status
+        if [ -n $STATUSFILE ]; then
+		    printf "$time_left" $i "work" > $STATUSFILE
         fi
 		sleep 1m
 	done
@@ -97,8 +101,8 @@ do
 		read -d '' -t 0.001
 		echo -e "\a"
 		echo "Work over"
-        if $FILESTATUS; then
-    		echo "Work over" > /tmp/patata_status
+        if [ -n $STATUSFILE ]; then
+    		echo "Work over" > $STATUSFILE
         fi
 		read
 	fi
@@ -108,8 +112,8 @@ do
 	for ((i=$PAUSE; i>0; i--))
 	do
 		printf "$time_left" $i "pause"
-        if $FILESTATUS; then 
-		    printf "$time_left" $i "pause" > /tmp/patata_status
+        if [ -n $STATUSFILE ]; then 
+		    printf "$time_left" $i "pause" > $STATUSFILE
         fi
 		sleep 1m
 	done
@@ -120,8 +124,8 @@ do
 		echo -e "\a"
 		echo "Pause over"
 
-        if $FILESTATUS; then 
-		    echo "Pause over" > /tmp/patata_status
+        if [ -n $STATUSFILE ]; then 
+		    echo "Pause over" > $STATUSFILE
         fi
 		read
 	fi
@@ -130,6 +134,6 @@ done
 echo "Take a coffee break! ☕"
 
 
-if $FILESTATUS; then 
-    rm /tmp/patata_status
+if [ -n $STATUSFILE ]; then 
+    rm $STATUSFILE
 fi
