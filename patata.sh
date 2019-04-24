@@ -24,6 +24,19 @@ show_help() {
 	END
 }
 
+controlc() {
+    # Secure shutdown
+    printf "\rSIGINT caught      "
+    if $FILESTATUS; then 
+        rm /tmp/patata_status
+    fi
+    task $TASK stop
+
+    exit
+}
+
+trap 'controlc' SIGINT
+
 play_notification() {
 	aplay -q /usr/lib/potato/notification.wav&
 }
