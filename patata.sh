@@ -10,7 +10,7 @@ STATUSFILE=false
 
 show_help() {
 	cat <<-END
-		usage: potato [-s] [-m] [-w m] [-b m] [-p i] [-t t] [-h] [-f f]
+		usage: potato [-s] [-m] [-w m] [-b m] [-p i] [-t t] [-h] [-o f] [-f t]
 		    -s: simple output. Intended for use in scripts
 		        When enabled, potato outputs one line for each minute, and doesn't print the bell character
 		        (ascii 007)
@@ -20,7 +20,8 @@ show_help() {
 		    -b m: let break periods last m minutes (default is 5)
 		    -p i: let iterate of pomodori before the big break (default is 4)
 		    -t t: let task ID from Taskwarrior to start (default is the most urgent task)
-		    -f f: print all the information to the file f
+		    -o f: print all the information to the file f
+		    -f t: filter the most prioritary task with tags t 
 		    -h: print this message
 	END
 }
@@ -42,7 +43,7 @@ play_notification() {
 	aplay -q /usr/lib/potato/notification.wav&
 }
 
-while getopts :sw:b:p:t:mf: opt; do
+while getopts :sw:b:p:t:mo:f: opt; do
 	case "$opt" in
 	s)
 		INTERACTIVE=false
@@ -63,8 +64,12 @@ while getopts :sw:b:p:t:mf: opt; do
 		TASK=$OPTARG
 	;;
     f)
+        TASK=$(task $OPTARG next limit:1 | tail -n +4 | head -n 1 | sed 's/^ //' | cut -d ' ' -f1)
+    ;;
+    o)
         STATUSFILE=$OPTARG
     ;;
+
 	h|\?)
 		show_help
 		exit 1
