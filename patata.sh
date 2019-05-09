@@ -114,26 +114,28 @@ do
 
     task $TASK stop
 
-	for ((i=$PAUSE; i>0; i--))
-	do
-		printf "$time_left" $i "pause"
-        if [ -n $STATUSFILE ]; then 
-		    printf "$time_left" $i "pause" > $STATUSFILE
-        fi
-		sleep 1m
-	done
+    if [ $p -ne 1 ]; then
+        for ((i=$PAUSE; i>0; i--))
+        do
+            printf "$time_left" $i "pause"
+            if [ -n $STATUSFILE ]; then 
+                printf "$time_left" $i "pause" > $STATUSFILE
+            fi
+            sleep 1m
+        done
 
-	! $MUTE && play_notification
-	if $INTERACTIVE; then
-		read -d '' -t 0.001
-		echo -e "\a"
-		echo "Pause over"
+        ! $MUTE && play_notification
+        if $INTERACTIVE; then
+            read -d '' -t 0.001
+            echo -e "\a"
+            echo "Pause over"
 
-        if [ -n $STATUSFILE ]; then 
-		    echo "Pause over" > $STATUSFILE
+            if [ -n $STATUSFILE ]; then 
+                echo "Pause over" > $STATUSFILE
+            fi
+            read
         fi
-		read
-	fi
+    fi
 done
 
 echo "Take a coffee break! ☕"
